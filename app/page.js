@@ -3,18 +3,11 @@ import styles from './page.module.scss';
 import DigitButton from './DigitButton';
 import OperationButton from './OperationButton';
 import React, { useEffect, useReducer } from 'react';
-
-export const ACTIONS = {
-  ADD_DIGIT: 'add-digit',
-  CHOOSE_OPERATION: 'choose-operation',
-  CLEAR: 'clear',
-  DELETE_DIGIT: 'delete-digit',
-  EVALUATE: 'evaluate',
-};
+import { actions } from './actions/Actions';
 
 function reducer(state, { type, payload }) {
   switch (type) {
-    case ACTIONS.ADD_DIGIT:
+    case actions.ADD_DIGIT:
       if (state.overwrite) {
         return { ...state, currentOperand: payload.digit, overwrite: false };
       }
@@ -29,7 +22,7 @@ function reducer(state, { type, payload }) {
         ...state,
         currentOperand: `${state.currentOperand || ''}${payload.digit}`,
       };
-    case ACTIONS.CHOOSE_OPERATION:
+    case actions.CHOOSE_OPERATION:
       if (state.currentOperand == null && state.previousOperand == null) {
         return state;
       }
@@ -54,15 +47,16 @@ function reducer(state, { type, payload }) {
         operation: payload.operation,
         currentOperand: null,
       };
-    case ACTIONS.CLEAR:
+    case actions.CLEAR:
       return {};
-    case ACTIONS.DELETE_DIGIT:
-      if (state.overwrite)
+    case actions.DELETE_DIGIT:
+      if (state.overwrite) {
         return {
           ...state,
           overwrite: false,
           currentOperand: null,
         };
+      }
       if (state.currentOperand == null) return state;
       if (state.currentOperand.length === 1) {
         return {
@@ -74,7 +68,7 @@ function reducer(state, { type, payload }) {
         ...state,
         currentOperand: state.currentOperand.slice(0, -1),
       };
-    case ACTIONS.EVALUATE:
+    case actions.EVALUATE:
       if (
         state.operation == null ||
         state.currentOperand == null ||
@@ -138,33 +132,33 @@ export default function HomePage() {
 
     function deleteKey(e) {
       if (e.key === 'Backspace' || e.key === 'Delete') {
-        dispatch({ type: ACTIONS.DELETE_DIGIT });
+        dispatch({ type: actions.DELETE_DIGIT });
       }
     }
 
     function dispatchKey(e) {
       if (['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key)) {
         const digit = e.key;
-        dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit } });
+        dispatch({ type: actions.ADD_DIGIT, payload: { digit } });
       }
 
       if (e.key === ',' || e.key === '.') {
         const digit = ',';
-        dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit } });
+        dispatch({ type: actions.ADD_DIGIT, payload: { digit } });
       }
 
       if (['*', '+', '-'].includes(e.key)) {
         const operation = e.key;
-        dispatch({ type: ACTIONS.CHOOSE_OPERATION, payload: { operation } });
+        dispatch({ type: actions.CHOOSE_OPERATION, payload: { operation } });
       }
 
       if (e.key === '÷' || e.key === '/') {
         const operation = '÷';
-        dispatch({ type: ACTIONS.CHOOSE_OPERATION, payload: { operation } });
+        dispatch({ type: actions.CHOOSE_OPERATION, payload: { operation } });
       }
 
       if (e.key === 'Enter' || e.key === '=') {
-        dispatch({ type: ACTIONS.EVALUATE });
+        dispatch({ type: actions.EVALUATE });
       }
     }
 
@@ -188,11 +182,11 @@ export default function HomePage() {
         </div>
         <button
           className={styles.spanTwo}
-          onClick={() => dispatch({ type: ACTIONS.CLEAR })}
+          onClick={() => dispatch({ type: actions.CLEAR })}
         >
           AC
         </button>
-        <button onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}>
+        <button onClick={() => dispatch({ type: actions.DELETE_DIGIT })}>
           DEL
         </button>
         <OperationButton operation="÷" dispatch={dispatch} />
@@ -212,7 +206,7 @@ export default function HomePage() {
         <DigitButton digit="0" dispatch={dispatch} />
         <button
           className={styles.spanTwo}
-          onClick={() => dispatch({ type: ACTIONS.EVALUATE })}
+          onClick={() => dispatch({ type: actions.EVALUATE })}
         >
           =
         </button>

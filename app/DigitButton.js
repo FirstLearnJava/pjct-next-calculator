@@ -1,10 +1,10 @@
 import React from 'react';
-import { ACTIONS } from './page';
+import { actions } from './actions/Actions';
 
 export default function DigitButton({ dispatch, digit }) {
   return (
     <button
-      onClick={() => dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit } })}
+      onClick={() => dispatch({ type: actions.ADD_DIGIT, payload: { digit } })}
     >
       {digit}
     </button>

@@ -1,11 +1,11 @@
 import React from 'react';
-import { ACTIONS } from './page';
+import { actions } from './actions/Actions';
 
 export default function OperationButton({ dispatch, operation }) {
   return (
     <button
       onClick={() =>
-        dispatch({ type: ACTIONS.CHOOSE_OPERATION, payload: { operation } })
+        dispatch({ type: actions.CHOOSE_OPERATION, payload: { operation } })
       }
     >
       {operation}
