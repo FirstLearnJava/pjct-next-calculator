@@ -3,7 +3,7 @@ import styles from './page.module.scss';
 import DigitButton from './DigitButton';
 import OperationButton from './OperationButton';
 import React, { useEffect, useReducer } from 'react';
-import { actions } from './actions/actions';
+import { actions } from './utils/actions';
 
 function reducer(state, { type, payload }) {
   switch (type) {
