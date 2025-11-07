@@ -3,7 +3,7 @@ import styles from './page.module.scss';
 import DigitButton from './DigitButton';
 import OperationButton from './OperationButton';
 import React, { useEffect, useReducer } from 'react';
-import { actions } from './actions/Actions';
+import { actions } from './actions/actions';
 
 function reducer(state, { type, payload }) {
   switch (type) {
@@ -12,12 +12,14 @@ function reducer(state, { type, payload }) {
         return { ...state, currentOperand: payload.digit, overwrite: false };
       }
       if (payload.digit === '0' && state.currentOperand === '0') return state;
-      if (
-        payload.digit === ',' &&
-        state.currentOperand &&
-        state.currentOperand.includes('.')
-      )
-        return state;
+      if (payload.digit === ',') {
+        if (state.currentOperand == null) {
+          return { ...state, currentOperand: '0,' };
+        }
+        if (state.currentOperand.includes(',')) {
+          return state;
+        }
+      }
       return {
         ...state,
         currentOperand: `${state.currentOperand || ''}${payload.digit}`,
@@ -170,7 +172,7 @@ export default function HomePage() {
 
   return (
     <div className={styles.title}>
-      Web Calculator
+      Online Calculator
       <div className={styles.calculatorGrid}>
         <div className={styles.output}>
           <div className={styles.previousOperand}>

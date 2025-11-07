@@ -1,5 +1,5 @@
 import React from 'react';
-import { actions } from './actions/Actions';
+import { actions } from './actions/actions';
 
 export default function OperationButton({ dispatch, operation }) {
   return (
