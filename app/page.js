@@ -2,7 +2,7 @@
 import styles from './page.module.scss';
 import DigitButton from './DigitButton';
 import OperationButton from './OperationButton';
-import React, { useReducer } from 'react';
+import React, { useEffect, useReducer } from 'react';
 
 export const ACTIONS = {
   ADD_DIGIT: 'add-digit',
@@ -19,7 +19,11 @@ function reducer(state, { type, payload }) {
         return { ...state, currentOperand: payload.digit, overwrite: false };
       }
       if (payload.digit === '0' && state.currentOperand === '0') return state;
-      if (payload.digit === ',' && state.currentOperand.includes(','))
+      if (
+        payload.digit === ',' &&
+        state.currentOperand &&
+        state.currentOperand.includes('.')
+      )
         return state;
       return {
         ...state,
@@ -89,8 +93,8 @@ function reducer(state, { type, payload }) {
 }
 
 function evaluate({ currentOperand, previousOperand, operation }) {
-  const prev = parseFloat(previousOperand);
-  const current = parseFloat(currentOperand);
+  const prev = parseFloat(previousOperand.replace(',', '.'));
+  const current = parseFloat(currentOperand.replace(',', '.'));
   if (isNaN(prev) || isNaN(current)) return '';
   let computation = '';
   switch (operation) {
@@ -107,7 +111,9 @@ function evaluate({ currentOperand, previousOperand, operation }) {
       computation = prev / current;
       break;
   }
-  return computation.toString();
+
+  computation = Math.round(computation * 100000000) / 100000000;
+  return computation.toString().replace('.', ',');
 }
 
 const INTEGER_FORMATTER = new Intl.NumberFormat('de-DE', {
@@ -125,46 +131,92 @@ export default function HomePage() {
     reducer,
     {},
   );
+
+  useEffect(() => {
+    document.addEventListener('keyup', dispatchKey);
+    document.addEventListener('keydown', deleteKey);
+
+    function deleteKey(e) {
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        dispatch({ type: ACTIONS.DELETE_DIGIT });
+      }
+    }
+
+    function dispatchKey(e) {
+      if (['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key)) {
+        const digit = e.key;
+        dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit } });
+      }
+
+      if (e.key === ',' || e.key === '.') {
+        const digit = ',';
+        dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit } });
+      }
+
+      if (['*', '+', '-'].includes(e.key)) {
+        const operation = e.key;
+        dispatch({ type: ACTIONS.CHOOSE_OPERATION, payload: { operation } });
+      }
+
+      if (e.key === '÷' || e.key === '/') {
+        const operation = '÷';
+        dispatch({ type: ACTIONS.CHOOSE_OPERATION, payload: { operation } });
+      }
+
+      if (e.key === 'Enter' || e.key === '=') {
+        dispatch({ type: ACTIONS.EVALUATE });
+      }
+    }
+
+    return () => {
+      document.removeEventListener('keyup', dispatchKey),
+        document.removeEventListener('keydown', deleteKey);
+    };
+  }, []);
+
   return (
-    <div className={styles.calculatorGrid}>
-      <div className={styles.output}>
-        <div className={styles.previousOperand}>
-          {formatOperand(previousOperand)} {operation}
+    <div className={styles.title}>
+      Web Calculator
+      <div className={styles.calculatorGrid}>
+        <div className={styles.output}>
+          <div className={styles.previousOperand}>
+            {formatOperand(previousOperand)} {operation}
+          </div>
+          <div className={styles.currentOperand}>
+            {formatOperand(currentOperand)}
+          </div>
         </div>
-        <div className={styles.currentOperand}>
-          {formatOperand(currentOperand)}
-        </div>
+        <button
+          className={styles.spanTwo}
+          onClick={() => dispatch({ type: ACTIONS.CLEAR })}
+        >
+          AC
+        </button>
+        <button onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}>
+          DEL
+        </button>
+        <OperationButton operation="÷" dispatch={dispatch} />
+        <DigitButton digit="1" dispatch={dispatch} />
+        <DigitButton digit="2" dispatch={dispatch} />
+        <DigitButton digit="3" dispatch={dispatch} />
+        <OperationButton operation="*" dispatch={dispatch} />
+        <DigitButton digit="4" dispatch={dispatch} />
+        <DigitButton digit="5" dispatch={dispatch} />
+        <DigitButton digit="6" dispatch={dispatch} />
+        <OperationButton operation="+" dispatch={dispatch} />
+        <DigitButton digit="7" dispatch={dispatch} />
+        <DigitButton digit="8" dispatch={dispatch} />
+        <DigitButton digit="9" dispatch={dispatch} />
+        <OperationButton operation="-" dispatch={dispatch} />
+        <DigitButton digit="," dispatch={dispatch} />
+        <DigitButton digit="0" dispatch={dispatch} />
+        <button
+          className={styles.spanTwo}
+          onClick={() => dispatch({ type: ACTIONS.EVALUATE })}
+        >
+          =
+        </button>
       </div>
-      <button
-        className={styles.spanTwo}
-        onClick={() => dispatch({ type: ACTIONS.CLEAR })}
-      >
-        AC
-      </button>
-      <button onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}>
-        DEL
-      </button>
-      <OperationButton operation="÷" dispatch={dispatch} />
-      <DigitButton digit="1" dispatch={dispatch} />
-      <DigitButton digit="2" dispatch={dispatch} />
-      <DigitButton digit="3" dispatch={dispatch} />
-      <OperationButton operation="*" dispatch={dispatch} />
-      <DigitButton digit="4" dispatch={dispatch} />
-      <DigitButton digit="5" dispatch={dispatch} />
-      <DigitButton digit="6" dispatch={dispatch} />
-      <OperationButton operation="+" dispatch={dispatch} />
-      <DigitButton digit="7" dispatch={dispatch} />
-      <DigitButton digit="8" dispatch={dispatch} />
-      <DigitButton digit="9" dispatch={dispatch} />
-      <OperationButton operation="-" dispatch={dispatch} />
-      <DigitButton digit="," dispatch={dispatch} />
-      <DigitButton digit="0" dispatch={dispatch} />
-      <button
-        className={styles.spanTwo}
-        onClick={() => dispatch({ type: ACTIONS.EVALUATE })}
-      >
-        =
-      </button>
     </div>
   );
 }
